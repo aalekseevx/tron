@@ -1,0 +1,5 @@
+{
+  "name": "tron",
+  "timeout": 0.2,
+  "memory_limit": 536870912
+}
