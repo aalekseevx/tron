@@ -50,16 +50,20 @@
 
             $("#prev_button").click(to_previous_frame);
             $("#next_button").click(to_next_frame);
-        });
 
-        $.getJSON('/challenge/get_info?id=' + id, function (data) {
-            $("#field_id").text(data['id']);
-            $("#field_player1").text(data['player1']);
-            $("#field_player2").text(data['player2']);
-            $("#field_player1_verd").text(data['player1_verdict']);
-            $("#field_player2_verd").text(data['player2_verdict']);
-            $("#field_winner").text(data['winner']);
-        })
+            $.getJSON('/challenge/get_info?id=' + id, function (data) {
+                $("#field_id").text(data['id']);
+                $("#field_player1").text(data['player1']);
+                $("#field_player2").text(data['player2']);
+                $("#field_player1_verd").text(data['player1_verdict']);
+                $("#field_player2_verd").text(data['player2_verdict']);
+                $("#field_winner").text(data['winner']);
+
+                //now we can display everything
+                $("#root").attr("style", "display: flex");
+                $(".loader").attr("style", "display: none");
+            })
+        });
     });
 
     function to_next_frame() {
@@ -160,7 +164,7 @@
     }
 </script>
 
-<div class="columns">
+<div id="root" class="columns" style="display: none">
     <div class="column">
         <div class="section">
             <div class="notification is-info">
@@ -291,3 +295,29 @@
         </div>
     </div>
 </div>
+
+<div class="content">
+    <div class="loader">
+    </div>
+</div>
+
+</div>
+
+<style>
+    .loader {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        border: 16px solid #f3f3f3; /* Light grey */
+        border-top: 16px solid #3498db; /* Blue */
+        border-radius: 50%;
+        width: 500px;
+        height: 500px;
+        animation: spin 2s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
