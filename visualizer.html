@@ -5,6 +5,7 @@
     let timer_id;
     let n, m;
     let frame_max;
+    let streams;
 
     function update() {
         if (is_playing) {
@@ -16,12 +17,21 @@
         }
     }
 
+    function repeat() {
+        current_frame = 0;
+        is_playing = 0;
+        update();
+        redraw();
+        setframerange()
+    }
+
     $(document).ready(function() {
         let url = new URL(window.location.href);
         let id = url.searchParams.get("id");
+        console.log("getting");
         $.getJSON("/challenge/log?id=" + id + "&format=json", function (data) {
+            console.log(data);
             my_log = data;
-
             n = my_log[current_frame]["board"].length;
             m = my_log[current_frame]["board"][0].length;
             frame_max = my_log.length - 2;
@@ -34,37 +44,54 @@
                 }
             }
 
-            redraw();
             $("#play_button").click(function () {
                 is_playing ^= 1;
                 update()
             });
 
-            $("#repeat_button").click(function () {
-                current_frame = 0;
-                is_playing = 0;
-                update();
-                redraw();
-                setframerange()
-            });
+            $("#repeat_button").click(repeat);
 
             $("#prev_button").click(to_previous_frame);
             $("#next_button").click(to_next_frame);
+            // $("#field_id").text(data['challenge_id']);
+            // $("#field_player1").text(data['player1']);
+            // $("#field_player2").text(data['player2']);
+            // $("#field_player1_verd").text(data['verdicts'][0]);
+            // $("#field_player2_verd").text(data['verdicts'][1]);
+            // $("#field_winner").text(data['winner']);
 
-            $.getJSON('/challenge/get_info?id=' + id, function (data) {
-                $("#field_id").text(data['id']);
-                $("#field_player1").text(data['player1']);
-                $("#field_player2").text(data['player2']);
-                $("#field_player1_verd").text(data['player1_verdict']);
-                $("#field_player2_verd").text(data['player2_verdict']);
-                $("#field_winner").text(data['winner']);
+            console.log("getting streams");
+            $.getJSON("/challenge/get_streams?id=" + id + "&streams[]=stdin&streams[]=stdout&streams[]=stderr&players[]=0&players[]=1", function (data) {
+                console.log("got streams");
+                streams = data;
+                $.getJSON('/challenge/get_info?id=' + id, function (data) {
+                    $("#field_id").text(data['id']);
+                    $("#field_player1").text(data['player1']);
+                    $("#field_player2").text(data['player2']);
+                    $("#field_player1_verd").text(data['player1_verdict']);
+                    $("#field_player2_verd").text(data['player2_verdict']);
+                    $("#field_winner").text(data['winner']);
 
-                //now we can display everything
-                $("#root").attr("style", "display: flex");
-                $(".loader").attr("style", "display: none");
-            })
+                    //now we can display everything
+                    $("#root").attr("style", "display: auto");
+                    $(".loader").attr("style", "display: none");
+                    $("#download_stdin1").attr("href", "get_streams?id=" + id + "&streams[]=stdin&players[]=0");
+                    $("#download_stdout1").attr("href", "get_streams?id=" + id + "&streams[]=stdout&players[]=0");
+                    $("#download_stderr1").attr("href", "get_streams?id=" + id + "&streams[]=stderr&players[]=0");
+                    $("#download_stdin2").attr("href", "get_streams?id=" + id + "&streams[]=stdin&players[]=1");
+                    $("#download_stdout2").attr("href", "get_streams?id=" + id + "&streams[]=stdout&players[]=1");
+                    $("#download_stderr2").attr("href", "get_streams?id=" + id + "&streams[]=stderr&players[]=1");
+                    redraw()
+                })
+            });
+
+            new ClipboardJS('.button');
         });
     });
+
+    function str_for_html(str) {
+        return $
+    }
 
     function to_next_frame() {
         if (current_frame + 1 == my_log.length) {
@@ -82,6 +109,11 @@
         redraw();
         setframerange()
     }
+
+    String.prototype.replaceAll = function(search, replacement) {
+        var target = this;
+        return target.replace(new RegExp(search, 'g'), replacement);
+    };
 
     function redraw() {
         class_mapper = {
@@ -155,61 +187,155 @@
                 let cur_class = class_mapper[cur_id];
                 let cur_lit = lit_mapper[cur_id];
                 $("#cell_" + i + "_" + j).attr("class", "square " + cur_class);
-                $("#player_board").append(cur_lit + ' ')
             }
-            $("#player_board").append('<br/>')
         }
+
+
         $("#points1").html(my_log[current_frame]["points"][0]);
         $("#points2").html(my_log[current_frame]["points"][1]);
+
+        for (let player = 0; player < 2; player++) {
+            $("#stdin" + (player + 1)).html(streams['stdin'][player][current_frame].replaceAll('\n', '<br>'));
+            $("#stdout" + (player + 1)).html(streams['stdout'][player][current_frame]);
+            $("#stderr" + (player + 1)).html(streams['stderr'][player][current_frame]);
+        }
     }
+
+
+    window.onkeydown = function (event) {
+        let keyName = event.key;
+        console.log(event.key);
+        if (keyName.toString() == "ArrowRight") {
+           to_next_frame();
+        } else if (keyName.toString() == "ArrowLeft") {
+            to_previous_frame();
+        } else if (keyName == ' ') {
+            is_playing ^= 1;
+            update();
+            event.preventDefault();
+        } else if (event.which == 82) {
+            console.log(event.key);
+            repeat();
+        }
+    };
 </script>
 
-<div id="root" class="columns" style="display: none">
-    <div class="column">
-        <div class="section">
-            <div class="notification is-info">
-                <h2 class="title is-5">
-                    Управление визуализацией
-                </h2>
-                <button id="prev_button" class="button"><i class="fas fa-step-backward"></i></button>
-                <button id="play_button" class="button"><i class="fas fa-play"></i></button>
-                <button id="next_button" class="button"><i class="fas fa-step-forward"></i></button>
-                <button id="repeat_button" class="button"><i class="fas fa-redo"></i></button>
-                <br/>
-                <br/>
-                Скорость воспроизведения:
-                <br/>
-                <script>
-                    function settimer() {
-                        clearInterval(timer_id);
-                        if (is_playing) {
-                            let speed = $("#speed").val();
-                            timer_id = setInterval(to_next_frame, 100 - speed)
+<div id="root" style="display: none">
+    <div class="section">
+        <div class="columns">
+        <div class="column">
+            <div class="section">
+                <div class="notification is-info">
+                    <h2 class="title is-5">
+                        Информация о дуэли
+                    </h2>
+                    <table class="table is-fullwidth is-bordered is-hoverable">
+                        <tbody>
+                        <tr>
+                            <td>ID</td>
+                            <td>
+                                <div id="field_id">
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Игрок I</td>
+                            <td>
+                                <div id="field_player1">
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Игрок II</td>
+                            <td>
+                                <div id="field_player2">
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Победитель</td>
+                            <td>
+                                <div id="field_winner">
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Вердикт I игрока</td>
+                            <td>
+                                <div id="field_player1_verd">
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Вердикт II игрока</td>
+                            <td>
+                                <div id="field_player2_verd">
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="notification is-info">
+                    <h2 class="title is-5">
+                        Управление визуализацией
+                    </h2>
+                    <button id="prev_button" class="button"><i class="fas fa-step-backward"></i></button>
+                    <button id="play_button" class="button"><i class="fas fa-play"></i></button>
+                    <button id="next_button" class="button"><i class="fas fa-step-forward"></i></button>
+                    <button id="repeat_button" class="button"><i class="fas fa-redo"></i></button>
+                    <br/>
+                    <br/>
+                    Скорость воспроизведения:
+                    <br/>
+                    <script>
+                        function settimer() {
+                            clearInterval(timer_id);
+                            if (is_playing) {
+                                let speed = $("#speed").val();
+                                timer_id = setInterval(to_next_frame, 100 - speed)
+                            }
                         }
-                    }
-                </script>
-                <input type="range" min="1" max="100" id="speed" oninput="settimer()" value="50">
-                <br/>
-                <script>
+                    </script>
+                    <input type="range" min="1" max="100" id="speed" oninput="settimer()" value="50">
+                    <br/>
+                    <script>
 
-                </script>
-                Перемотка:
-                <br/>
-                <script>
-                    function changeframe() {
-                        current_frame = $("#moment").val();
-                        redraw()
-                    }
-                    function setframerange() {
-                        $("#moment").val(current_frame)
-                    }
-                </script>
-                <input type="range" min="0" max="0" id="moment" oninput="changeframe()" value="0">
-                <br/>
+                    </script>
+                    Перемотка:
+                    <br/>
+                    <script>
+                        function changeframe() {
+                            current_frame = $("#moment").val();
+                            redraw()
+                        }
+                        function setframerange() {
+                            $("#moment").val(current_frame)
+                        }
+                    </script>
+                    <input type="range" min="0" max="0" id="moment" oninput="changeframe()" value="0">
+                    <br/>
+                    <div class="content">
+                        Вы можете использовать управление с клавиатуры:
+                        <ul>
+                            <li>Стрелки для переключения кадров</li>
+                            <li>Пробел для включения и выключения паузы</li>
+                            <li>R для перехода на первый кадр</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="column is-three-fifths">
+            <div class="section">
+                <div class="board">
+                </div>
+            </div>
+            <div class="notification is-info">
                 <h2 class="title is-5">
                     Текущий счёт
                 </h2>
-
                 <table class="table is-fullwidth is-bordered is-hoverable">
                     <tbody>
                     <tr>
@@ -222,75 +348,167 @@
                     </tr>
                     </tbody>
                 </table>
-
-                <h2 class="title is-5">
-                    Как решения видят поле:
-                </h2>
-                <div class="notification">
-                    <div id="player_board" class="player_board">
-                    </div>
-                </div>
-                Копировать карту в буфер обмена
-                <br/>
-                <script>new ClipboardJS('#copy_button');</script>
-                <button id="copy_button" class="button" data-clipboard-action="copy" data-clipboard-target="#player_board"><i class="fas fa-copy"></i></button>
-                <br/>
-                <br/>
-                <h2 class="title is-5">
-                    Информация о дуэли
-                </h2>
-                <table class="table is-fullwidth is-bordered is-hoverable">
-                    <tbody>
-                    <tr>
-                        <td>ID</td>
-                        <td>
-                            <div id="field_id">
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Игрок I</td>
-                        <td>
-                            <div id="field_player1">
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Игрок II</td>
-                        <td>
-                            <div id="field_player2">
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Победитель</td>
-                        <td>
-                            <div id="field_winner">
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Вердикт I игрока</td>
-                        <td>
-                            <div id="field_player1_verd">
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Вердикт II игрока</td>
-                        <td>
-                            <div id="field_player2_verd">
-                            </div>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
             </div>
         </div>
     </div>
-    <div class="column is-three-fifths">
-        <div class="section">
-            <div class="board">
+    </div>
+    <div class="section">
+        <div class="notification is-info">
+            <h2 class="title is-5">
+                Просмотр потоков ввода/вывода
+            </h2>
+            Pro tip: используйте управление клавиатурой для переключения кадров.
+            <br/>
+            <br/>
+            <div class="columns">
+                <div class="column">
+                    <h2 class="title is-6">
+                        Игрок "Красный"
+                    </h2>
+                    <h2 class="title is-7">
+                        STDIN
+                    </h2>
+                    <div class="buttons">
+                        <a id="copy_stdin1" class="button" data-clipboard-action="copy" data-clipboard-target="#stdin1">
+                            <span class="icon is-small">
+                                <i class="fas fa-copy"></i>
+                            </span>
+                            <span>
+                                Скопировать этот фрагмент
+                            </span>
+                        </a>
+                        <a id="download_stdin1" class="button">
+                            <span class="icon is-small">
+                                <i class="fas fa-download"></i>
+                            </span>
+                            <span>Скачать весь поток</span>
+                        </a>
+                    </div>
+                    <div id="stdin1" class="notification stream big-stream">
+
+                    </div>
+
+                    <h2 class="title is-7">
+                        STDOUT
+                    </h2>
+                    <div class="buttons">
+                        <a id="copy_stdout1" class="button" data-clipboard-action="copy" data-clipboard-target="#stdout1">
+                            <span class="icon is-small">
+                                <i class="fas fa-copy"></i>
+                            </span>
+                            <span>
+                                Скопировать этот фрагмент
+                            </span>
+                        </a>
+                        <a id="download_stdout1" class="button">
+                            <span class="icon is-small">
+                                <i class="fas fa-download"></i>
+                            </span>
+                            <span>Скачать весь поток</span>
+                        </a>
+                    </div>
+                    <div id="stdout1" class="notification stream">
+
+                    </div>
+
+                    <h2 class="title is-7">
+                        STDERR
+                    </h2>
+                    <div class="buttons">
+                        <a id="copy_stderr1" class="button" data-clipboard-action="copy" data-clipboard-target="#stderr1">
+                            <span class="icon is-small">
+                                <i class="fas fa-copy"></i>
+                            </span>
+                            <span>
+                                Скопировать этот фрагмент
+                            </span>
+                        </a>
+                        <a id="download_stderr1" class="button">
+                            <span class="icon is-small">
+                                <i class="fas fa-download"></i>
+                            </span>
+                            <span>Скачать весь поток</span>
+                        </a>
+                    </div>
+                    <div id="stderr1" class="notification stream">
+
+                    </div>
+                </div>
+
+                <div class="column">
+                    <h2 class="title is-6">
+                        Игрок "Синий"
+                    </h2>
+                    <h2 class="title is-7">
+                        STDIN
+                    </h2>
+                    <div class="buttons">
+                        <a id="copy_stdin2" class="button" data-clipboard-action="copy" data-clipboard-target="#stdin2">
+                            <span class="icon is-small">
+                                <i class="fas fa-copy"></i>
+                            </span>
+                            <span>
+                                Скопировать этот фрагмент
+                            </span>
+                        </a>
+                        <a id="download_stdin2" class="button">
+                            <span class="icon is-small">
+                                <i class="fas fa-download"></i>
+                            </span>
+                            <span>Скачать весь поток</span>
+                        </a>
+                    </div>
+                    <div id="stdin2" class="notification stream big-stream">
+
+                    </div>
+
+                    <h2 class="title is-7">
+                        STDOUT
+                    </h2>
+                    <div class="buttons">
+                        <a id="copy_stdout2" class="button" data-clipboard-action="copy" data-clipboard-target="#stdout2">
+                            <span class="icon is-small">
+                                <i class="fas fa-copy"></i>
+                            </span>
+                            <span>
+                                Скопировать этот фрагмент
+                            </span>
+                        </a>
+                        <a id="download_stdout2" class="button">
+                            <span class="icon is-small">
+                                <i class="fas fa-download"></i>
+                            </span>
+                            <span>Скачать весь поток</span>
+                        </a>
+                    </div>
+                    <div id="stdout2" class="notification stream">
+
+                    </div>
+
+                    <h2 class="title is-7">
+                        STDERR
+                    </h2>
+                    <div class="buttons">
+                        <a id="copy_stderr2" class="button" data-clipboard-action="copy" data-clipboard-target="#stderr2">
+                            <span class="icon is-small">
+                                <i class="fas fa-copy"></i>
+                            </span>
+                            <span>
+                                Скопировать этот фрагмент
+                            </span>
+                        </a>
+                        <a id="download_stderr2" class="button">
+                            <span class="icon is-small">
+                                <i class="fas fa-download"></i>
+                            </span>
+                            <span>Скачать весь поток</span>
+                        </a>
+                    </div>
+                    <div id="stderr2" class="notification stream">
+
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -301,7 +519,67 @@
     </div>
 </div>
 
-</div>
+<style>
+    .stream {
+        font-size: 12px;
+        font-family: "Courier New", monospace;
+        color: black;
+        text-align: center;
+        padding: 1.25rem;
+    }
+
+    .big-stream {
+        height: 450px;
+    }
+
+
+    .board {
+        height: 640px;
+        width: 640px;
+        /*margin: 20px;*/
+        border: 15px solid #333;
+    }
+
+    .square {
+        width: 100%;
+        height: 100%;
+        border-radius: 5px;
+    }
+
+    .board_basic_cell {
+        float: left;
+        vertical-align: top;
+        display: inline-block;
+        background-color: #fdf5e6;
+        border: 2px solid navajowhite;
+    }
+
+    .red {
+        background-color: #ff3860;
+        border-radius: 5px;
+    }
+
+    .red_tail {
+        background-color: #ff3860;
+    }
+
+    .blue {
+        background-color: #209cee;
+        border-radius: 5px;
+    }
+
+    .blue_tail {
+        background-color: #209cee;
+    }
+
+    .block {
+        background-color: gray;
+    }
+
+    .empty {
+
+    }
+</style>
 
 <style>
     .loader {
