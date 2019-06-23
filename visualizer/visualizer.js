@@ -43,9 +43,7 @@ function repeat() {
 $(document).ready(function() {
     let url = new URL(window.location.href);
     let id = url.searchParams.get("id");
-    console.log("getting");
     $.getJSON("/challenge/log?id=" + id + "&format=json", function (data) {
-        console.log(data);
         my_log = data;
         n = my_log[current_frame]["board"].length;
         m = my_log[current_frame]["board"][0].length;
@@ -75,9 +73,7 @@ $(document).ready(function() {
         // $("#field_player2_verd").text(data['verdicts'][1]);
         // $("#field_winner").text(data['winner']);
 
-        console.log("getting streams");
         $.getJSON("/challenge/get_streams?id=" + id + "&streams[]=stdin&streams[]=stdout&streams[]=stderr&players[]=0&players[]=1", function (data) {
-            console.log("got streams");
             streams = data;
             $.getJSON('/challenge/get_info?id=' + id, function (data) {
                 $("#field_id").text(data['id']);
@@ -163,45 +159,44 @@ function redraw() {
         28: "",
     };
 
-    lit_mapper = {
-        0: ".",
-        1: "R",
-        2: "Q",
-        3: "Q",
-        4: "Q",
-        5: "Q",
-        6: "Q",
-        7: "Q",
-        8: "Q",
-        9: "Q",
-        10: "Q",
-        11: "Q",
-        12: "Q",
-        13: "B",
-        14: "W",
-        15: "W",
-        16: "W",
-        17: "W",
-        18: "W",
-        19: "W",
-        20: "W",
-        21: "W",
-        22: "W",
-        23: "W",
-        24: "W",
-        25: "X",
-        26: "",
-        27: "",
-        28: "",
+    html_mapper = {
+        0: "",
+        1: "",
+        2: "",
+        3: "",
+        4: "",
+        5: "",
+        6: "",
+        7: "",
+        8: "",
+        9: "",
+        10: "",
+        11: "",
+        12: "",
+        13: "",
+        14: "",
+        15: "",
+        16: "",
+        17: "",
+        18: "",
+        19: "",
+        20: "",
+        21: "",
+        22: "",
+        23: "",
+        24: "",
+        25: "",
+        26: "<i class=\"icon_board fa-lg fab fa-bitcoin\"></i>",
+        27: "<i class=\"icon_board fa-lg fas fa-fast-forward\"></i>",
+        28: "<i class=\"icon_board fa-lg fas fa-fast-backward\"></i>",
     };
 
-    $("#player_board").html("");
     for(let i = 0; i < n; i++) {
         for (let j = 0; j < m; j++) {
             let cur_id = my_log[current_frame]["board"][i][j];
             let cur_class = class_mapper[cur_id];
-            let cur_lit = lit_mapper[cur_id];
-            $("#cell_" + i + "_" + j).attr("class", "square " + cur_class);
+            let cur_html = html_mapper[cur_id];
+            $("#cell_" + i + "_" + j).attr("class", "square " + cur_class).html(cur_html);
         }
     }
 
@@ -213,13 +208,28 @@ function redraw() {
         $("#stdin" + (player + 1)).html(streams['stdin'][player][current_frame].replaceAll('\n', '<br>'));
         $("#stdout" + (player + 1)).html(streams['stdout'][player][current_frame]);
         $("#stderr" + (player + 1)).html(streams['stderr'][player][current_frame]);
+
+        let pw = my_log[current_frame]["power_ups"][player];
     }
+    
+    function get_pw_mess(val) {
+        if (val > 0) {
+            return "Осталось ходов: " + val;
+        } else {
+            return "Неактивен"
+        }
+    }
+
+    let pw = my_log[current_frame]['power_ups'];
+    $("#red_SPEED_UP").html(get_pw_mess(pw[0]['SPEED_UP']));
+    $("#red_SPEED_DOWN").html(get_pw_mess(pw[0]['SPEED_DOWN']));
+    $("#blue_SPEED_UP").html(get_pw_mess(pw[1]['SPEED_UP']));
+    $("#blue_SPEED_DOWN").html(get_pw_mess(pw[1]['SPEED_DOWN']));
 }
 
 
 window.onkeydown = function (event) {
     let keyName = event.key;
-    console.log(event.key);
     if (keyName.toString() == "ArrowRight") {
         to_next_frame();
     } else if (keyName.toString() == "ArrowLeft") {
@@ -229,7 +239,6 @@ window.onkeydown = function (event) {
         update();
         event.preventDefault();
     } else if (event.which == 82) {
-        console.log(event.key);
         repeat();
     }
 };

@@ -26,6 +26,17 @@
     border-radius: 5px;
 }
 
+.icon_board {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon_board:before
+{
+    font-size:   75%;
+}
+
 .board_basic_cell {
     float: left;
     vertical-align: top;
