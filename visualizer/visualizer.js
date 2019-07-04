@@ -211,7 +211,7 @@ function redraw() {
 
         let pw = my_log[current_frame]["power_ups"][player];
     }
-    
+
     function get_pw_mess(val) {
         if (val > 0) {
             return "Осталось ходов: " + val;
