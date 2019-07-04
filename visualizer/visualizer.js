@@ -43,8 +43,8 @@ function repeat() {
 $(document).ready(function() {
     let url = new URL(window.location.href);
     let id = url.searchParams.get("id");
-    $.getJSON("/challenge/log?id=" + id + "&format=json", function (data) {
-        my_log = data;
+    $.getJSON("/api/challenges/" + id + '&keys[]=log', function (data) {
+        my_log = data['log'];
         n = my_log[current_frame]["board"].length;
         m = my_log[current_frame]["board"][0].length;
         frame_max = my_log.length - 2;
@@ -73,9 +73,9 @@ $(document).ready(function() {
         // $("#field_player2_verd").text(data['verdicts'][1]);
         // $("#field_winner").text(data['winner']);
 
-        $.getJSON("/challenge/get_streams?id=" + id + "&streams[]=stdin&streams[]=stdout&streams[]=stderr&players[]=0&players[]=1", function (data) {
+        $.getJSON("/api/challenge/get_streams?id=" + id + "&streams[]=stdin&streams[]=stdout&streams[]=stderr&players[]=0&players[]=1", function (data) {
             streams = data;
-            $.getJSON('/challenge/get_info?id=' + id, function (data) {
+            $.getJSON('/api/challenge/get_info?id=' + id, function (data) {
                 $("#field_id").text(data['id']);
                 $("#field_player1").text(data['player1']);
                 $("#field_player2").text(data['player2']);
