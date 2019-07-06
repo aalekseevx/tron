@@ -43,7 +43,7 @@ function repeat() {
 $(document).ready(function() {
     let url = new URL(window.location.href);
     let id = url.searchParams.get("id");
-    $.getJSON("/api/challenges/" + id + '&keys[]=log', function (data) {
+    $.getJSON("/api/challenges/" + id + '?keys[]=log', function (data) {
         my_log = data['log'];
         n = my_log[current_frame]["board"].length;
         m = my_log[current_frame]["board"][0].length;
