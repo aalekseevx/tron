@@ -52,7 +52,7 @@ $(document).ready(function() {
 
         for(let i = 0; i < n; i++) {
             for (let j = 0; j < m; j++) {
-                styles = 'style="height: ' + (100.0 / n).toString() + '%; width:' + (100.0 / m).toString() + '%"';
+                let styles = 'style="height: ' + (100.0 / n).toString() + '%; width:' + (100.0 / m).toString() + '%"';
                 $(".board").append('<div class="board_basic_cell" ' + styles + '><div id="cell_' + i.toString() + '_' + j.toString()+ '"></div></div>');
             }
         }
@@ -127,7 +127,7 @@ String.prototype.replaceAll = function(search, replacement) {
 };
 
 function redraw() {
-    class_mapper = {
+    let class_mapper = {
         0: "empty",
         1: "red",
         2: "red_tail",
@@ -159,7 +159,7 @@ function redraw() {
         28: "",
     };
 
-    html_mapper = {
+    let html_mapper = {
         0: "",
         1: "",
         2: "",
