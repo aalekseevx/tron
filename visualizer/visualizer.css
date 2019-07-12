@@ -1,11 +1,12 @@
 
 .stream {
-    font-size: 12px;
+    font-size: 8px;
     font-family: "Courier New", monospace;
     color: black;
     text-align: center;
     padding: 1.25rem;
     vertical-align: center;
+    overflow:auto;
 }
 
 .big-stream {
