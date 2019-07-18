@@ -3,10 +3,12 @@
 </h1>
 
 <div class="" style="font-family: 'Computer Modern'">
-    ограничение по времени на ход: 0.5 с <br/>
-    ограничение по памяти на ход: 256 МБ<br/>
-    ввод: стандартный ввод<br/>
-    вывод: стандартный вывод<br/>
+    <div class="section">
+        ограничение по времени на ход: 0.5 с <br/>
+        ограничение по памяти на ход: 256 МБ<br/>
+        ввод: стандартный ввод<br/>
+        вывод: стандартный вывод<br/>
+    </div>
 
     Игровое поле представляет из себя матрицу размером $$$n \times m$$$ клеток. Всего в игре $$$10$$$ игровых полей. $$$5$$$ из них доступны вам для проведения дуэлей,
     остальные останутся вам неизвестны. Турниры будут проходить на всех $$$10$$$ полях.
@@ -65,8 +67,8 @@
                 <li>$$$b$$$ - клетка, посещённая синим игроком</li>
                 <li>$$$X$$$ - клетка с препятствием</li>
                 <li>$$$C$$$ - клетка с монетой</li>
-                <li>$$$U$$$ - клетка с ускоряющим зельем</li>
-                <li>$$$D$$$ - клетка с замедляюзим зельем</li>
+                <li>$$$U$$$ - клетка с ускоряющим бонусом</li>
+                <li>$$$D$$$ - клетка с замедляюзим бонусом</li>
             </ul>
 
         </div>
@@ -162,9 +164,9 @@
         Пример решения на C++
     </h1>
     <pre><code class="hljs">
-#include &lt;iostream&gt;
-#include &lt;random&gt;
-#include &lt;time.h&gt;
+#include <iostream>
+#include <random>
+#include <time.h>
 using namespace std;
 
 mt19937 rnd(time(0));
@@ -177,13 +179,13 @@ int level, n, m;
 string player;
 
 void make_move() {
-    vector&lt;vector&lt;char&gt;&gt; field(n, vector&lt;char&gt;(m));
+    vector<vector<char>> field(n, vector<char>(m));
     int my_x = -1, my_y = -1;
-    char my_ptr = player == &quot;RED&quot; ? 'R' : 'B';
+    char my_ptr = player == "RED" ? 'R' : 'B';
 
-    for (int i = 0; i &lt; n; i++) {
-        for (int j = 0; j &lt; m; j++) {
-            cin &gt;&gt; field[i][j];
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            cin >> field[i][j];
             if (field[i][j] == my_ptr) {
                 my_x = i;
                 my_y = j;
@@ -194,22 +196,29 @@ void make_move() {
     int xc[] = {0, 1, 0, -1};
     int yc[] = {-1, 0, 1, 0};
 
-    vector&lt;int&gt; possible_moves;
+    vector<int> possible_moves;
     char lit[] = {'L', 'D', 'R', 'U'};
+    char good[] = {'.', 'C', 'U', 'D'};
 
-    for (int move = 0; move &lt; 4; move++) {
+    for (int move = 0; move < 4; move++) {
         int nx = my_x + xc[move];
         int ny = my_y + yc[move];
-        if (nx &gt;= 0 &amp;&amp; nx &lt; n &amp;&amp; ny &gt;= 0 &amp;&amp; ny &lt; m &amp;&amp; field[nx][ny] == '.') {
-            possible_moves.push_back(move);
+        if (nx >= 0 && nx < n && ny >= 0 && ny < m) {
+            int ok = 0;
+            for (char c: good) {
+                ok |= (field[nx][ny] == c);
+            }
+            if (ok) {
+                possible_moves.push_back(move);
+            }
         }
     }
 
-    cout &lt;&lt; lit[possible_moves[get_rnd(possible_moves.size())]] &lt;&lt; endl;
+    cout << lit[possible_moves[get_rnd(possible_moves.size())]] << endl;
     cout.flush();
 }
 int main() {
-    cin &gt;&gt; player &gt;&gt; level &gt;&gt; n &gt;&gt; m;
+    cin >> player >> level >> n >> m;
     while(true) {
         make_move();
     }
