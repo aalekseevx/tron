@@ -1,0 +1,82 @@
+\documentclass[11pt,a4paper,oneside]{article}
+
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage[russian]{olymp}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{olymp}
+\usepackage[all]{xy}
+\usepackage{graphics}
+\usepackage{epigraph}
+\usepackage{minted}
+
+%\usepackage{expdlist}
+%\usepackage{textpos}
+
+\makeatletter
+
+\renewenvironment{problem}[5]{
+\def\@t{#5}
+
+\ifx\@t\empty
+    \def\@memorylimit{\defaultmemorylimit}
+\else
+\ifcat\par\@t
+    \def\@memorylimit{\defaultmemorylimit}
+\else
+    \def\@memorylimit{#5}
+\fi
+\fi
+
+{\noindent\textbf{\problemheadfont\textsf{\kw@Problem:\ \ #1}}
+\nopagebreak\par\vspace{\afterproblemhead}
+\problemtextfont\parindent=6.5mm
+\vbox{
+    \begin{tabular}{l@{\extracolsep{1cm}}l}
+    \kw@InputFileName & \texttt{#2} \\
+    \kw@OutputFileName & \texttt{#3} \\
+    \kw@TimeLimit & #4 \\
+    \kw@MemoryLimit & \@memorylimit \\
+    \end{tabular}
+}
+\nopagebreak\par\vspace{\afterconstraints}\problemtextfont}
+\newcommand{\InputFileName}{#2}
+\newcommand{\OutputFileName}{#3}
+}
+{\problemend}
+
+
+\renewcommand{\t}{\texttt}
+\renewcommand{\leqslant}{\le}
+\newcommand{\ExamplePic}
+{\medbreak\medskip\noindent{\bf\Large\textsf{Picture}}\smallskip}%
+
+\binoppenalty=10000
+\relpenalty=10000
+\exhyphenpenalty=10000
+
+\createsection{\Illustration}{Иллюстрация}
+
+\makeatletter
+
+\renewcommand{\@oddhead}{%
+\parbox{\textwidth}{%
+\sffamily\begin{center}
+\protect\ %
+\\[2pt]
+\hrule%
+\end{center}}%
+}
+
+\makeatother
+
+
+\begin{document}
+
+\input tron.tex
+
+\raggedbottom
+
+\end{document}
