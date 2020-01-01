@@ -1,0 +1,85 @@
+{
+	"name": {
+		"russian": "Трон",
+		"english": "Tron"
+	},
+	"short-name": "tron",
+	"time-limit": 1000,
+    "memory-limit": 268435456,
+    "public-tests": [1, 2, 3, 4, 5],
+    "private-tests": [6, 7, 8, 9, 10],
+    "tests": [
+    	{
+            "id": 1,
+    		"name": "Test 1",
+    		"filename": "01.json",
+    		"description": "Txt map stored in 01.txt"
+    	},
+    	{
+    		"id": 2,
+    		"name": "Test 2",
+    		"filename": "02.json",
+    		"description": "Txt map stored in 02.txt"
+    	},
+    	{
+    		"id": 3,
+    		"name": "Test 3",
+    		"filename": "03.json",
+    		"description": "Txt map stored in 03.txt"
+    	},
+    	{
+    		"id": 4,
+    		"name": "Test 4",
+    		"filename": "04.json",
+    		"description": "Txt map stored in 04.txt"
+    	},
+    	{
+    		"id": 5,
+    		"name": "Test 5",
+    		"filename": "05.json",
+    		"description": "Txt map stored in 05.txt"
+    	},
+    	{
+    		"id": 6,
+    		"name": "Test 6",
+    		"filename": "06.json",
+    		"description": "Txt map stored in 06.txt"
+    	},
+    	{
+    		"id": 7,
+    		"name": "Test 7",
+    		"filename": "07.json",
+    		"description": "Txt map stored in 07.txt"
+    	},
+    	{
+    		"id": 8,
+    		"name": "Test 8",
+    		"filename": "08.json",
+    		"description": "Txt map stored in 08.txt"
+    	},
+    	{
+    		"id": 9,
+    		"name": "Test 9",
+    		"filename": "09.json",
+    		"description": "Txt map stored in 09.txt"
+    	},
+    	{
+    		"id": 10,
+    		"name": "Test 10",
+    		"filename": "10.json",
+    		"description": "Txt map stored in 10.txt"
+    	}
+    ],
+    "solutions": [
+        {
+            "name:": "Nikolay Ermolin.",
+            "source": "ermolin.cpp",
+            "language": "g++17"
+        },
+        {
+            "name:": "Svyatoslav Starkov.",
+            "source": "starkov.cpp",
+            "language": "g++17"
+        }
+    ]
+}
